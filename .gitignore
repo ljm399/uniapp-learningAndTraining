@@ -1,0 +1,43 @@
+# ===== OS / Editor =====
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*.tmp
+*.log
+
+.vscode/
+.idea/
+*.iml
+
+# ===== Node =====
+node_modules/
+**/node_modules/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ===== uni-app / HBuilderX =====
+# Build outputs
+unpackage/
+**/unpackage/
+
+# HBuilderX project settings
+.hbuilderx/
+**/.hbuilderx/
+
+# uniCloud local
+uniCloud-aliyun/.env*
+uniCloud-tcb/.env*
+
+# ===== WeChat Mini Program / platform build artifacts =====
+# (Usually under unpackage, kept here for redundancy)
+**/dist/
+**/.cache/
+
+# ===== Optional: local env =====
+.env
+.env.*
