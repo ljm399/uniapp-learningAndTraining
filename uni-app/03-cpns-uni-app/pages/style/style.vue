@@ -17,6 +17,7 @@
 </script>
 
 <style lang="scss">
+	// @import '@/static/custom-font/iconfont.css';
 	.bg-view{
 		height: 200rpx;
 		border: 1px solid red;

@@ -1,6 +1,6 @@
 <template>
 	<view class="login">
-		<uni-forms ref="form" :modelValue="formData" :rules="rules">
+		<uni-forms ref="form" :model="formData" :rules="rules">
 			<!-- 第一个表单向 -->
 			<uni-forms-item label="账号" name="username" required>
 				<!-- <input type="text" v-model="formData.username" placeholder="请输入账号" /> -->

@@ -1,3 +1,19 @@
+# 本地图片的引入
+
+### 一。用@替代../../相对路径
+
+### 二。要是本地图片没效果，放在
+
+### 三。导入阿里云图片
+
+### 其他细节day01有
+
+
+
+# 只要修改了uni.scss都要重启而不是热更新
+
+# 不行就重新识别项目文件
+
 # 一。扩展组件 uni-ui
 
 ### uni-forms 表单组件
@@ -5,7 +21,16 @@
 - **定位**
 
   - `uni-forms` + `uni-forms-item` 负责表单结构与校验
+
+    - vue2使用ref
+
+      ```vue
+      <uni-forms ref="form" 。。。。> // 先ref
+      this.$refs.form	// 不用const form = ref（）
+      ```
+
   - `uni-easyinput` / `input` 负责输入
+
   - 推荐配合 `rules` 做声明式校验
 
 - **2022 项目常见写法（在 08-uni-ui-form 里能看到）**
@@ -13,46 +38,15 @@
   - `:modelValue="formData"`
   - `this.$refs.form.validate().then().catch()`
 
-- **最新推荐写法（以当前 uni-ui 文档为准）**
+- **最新推荐写法（以当前 uni-ui 文档为准）** --- 这里是使用setup
+  
   - **优先使用** `:model` 或 `v-model`（而不是 `:modelValue`）
   - 校验更推荐 `async/await`
 
 ```vue
 <template>
   <uni-forms ref="formRef" :model="formData" :rules="rules">
-    <uni-forms-item label="账号" name="username" required>
-      <uni-easyinput v-model="formData.username" placeholder="请输入账号" />
-    </uni-forms-item>
-    <uni-forms-item label="密码" name="password" required>
-      <uni-easyinput
-        type="password"
-        v-model="formData.password"
-        placeholder="请输入密码"
-      />
-    </uni-forms-item>
-  </uni-forms>
-
-  <button @click="onSubmit">提交</button>
-</template>
-
-<script setup>
-import { ref, reactive } from "vue";
-
-const formRef = ref();
-const formData = reactive({ username: "", password: "" });
-
-const rules = {
-  username: {
-    rules: [{ required: true, errorMessage: "请输入账号" }],
-  },
-  password: {
-    rules: [
-      { required: true, errorMessage: "请输入密码" },
-      { minLength: 6, maxLength: 8, errorMessage: "请输入6-8位的密码" },
-    ],
-  },
-};
-
+    
 async function onSubmit() {
   try {
     await formRef.value.validate();
@@ -64,66 +58,74 @@ async function onSubmit() {
 </script>
 ```
 
-### uni-ui 的四种安装方式
+
+
+### uni-ui 的四种安装方式（先去官网：位置：uni-app->uni-ui的开始使用）
 
 - **方式 1：通过 HBuilderX 插件市场导入（uni_modules）**
-
   - 最常用（你的 `uni-app/04-uni-ui`、`05-uni-ui-all` 也是这种结构）
   - 会在项目根目录生成 `uni_modules/xxx`
-
+  
 - **方式 2：npm 安装 `@dcloudio/uni-ui`**
-
   - 适合走 Node 依赖管理（CI/团队协作）
   - 安装后建议配置 `pages.json -> easycom`，让 `uni-xxx` 自动按需引入
   - 旧项目组件版本偏老时，建议升级到新版本
-
+  
 - **方式 3：下载源码本地拷贝（不推荐）**
-
   - 维护成本高、升级困难
   - 多人协作容易出现“某个人没同步组件版本”的问题
-
+  
 - **方式 4：整包导入 / 示例项目拷贝（学习用）**
   - 适合快速体验或教学（不适合长期维护)
 
-### uni-ui 版本更新建议
-
-- 旧项目里 `uni_modules/uni-icons` 等组件版本可能偏老（例如 1.x）
-- 新项目建议优先升级到较新的 uni-ui 版本（通常是 2.x 系列）
-- 升级方式（示意命令）
-
-```bash
-npm install @dcloudio/uni-ui@latest
-```
-
-- 升级后注意
-  - 少数组件 API 可能有调整（例如 `uni-forms` 的 `:modelValue` -> `:model`/`v-model`）
-  - 你的 `:deep()` 样式穿透在部分端可能不生效，必要时改 `:global()` 或加条件编译
-
-### uni-ui 的四种安装方式
-
-- 上面“四种方式”写一次即可；如果你保留两个同名标题，建议第二个标题下放：
-  - **安装后的检查清单**
+- - **安装后的检查清单**
     - `uni_modules` 是否存在
     - 组件能否在页面直接使用（easycom 是否生效）
     - HBuilderX 是否提示组件类型与属性
+  
+  
 
-### 定制 uni-ui 的主题
+### 定制 uni-ui 的主题（区别下面的重写样式，这是主题）
 
 - **主题变量入口**：`uni.scss`
   - 可以覆盖 uni-app/uni-ui 预置变量，例如 `$uni-color-primary`
   - 修改后需要重新编译
 
 ```scss
+/* 需要放到文件最上面 */
+@import '@/uni_modules/uni-scss/variables.scss'; //先导入这个才能用下面的覆盖
+
 // uni.scss
 $uni-color-primary: #ff8198;
 $uni-text-color: #333;
 ```
 
+#### 问题：scss导入css不行，上面是scss，要是css就不行了
+
+- 误区：“你现在这个 uni.scss 主要用来改变量，不是用来输出全局样式规则（即不是直接修改某个标签的颜色，而是把变量名的值修改了，变量名不变”，而 `uni-ui` 组件的样式本身会随组件一起打包/注入，所以你感觉“不导入也能用”。
+
+  - 所以不用全局导入
+
+- 而你这css文件里都是直接修改标签样式，所以要先全局导入先，如下
+
+  ```vue
+  App.vue
+  <style lang="scss">
+  /*每个页面公共css */
+  @import "./uni.scss";
+  </style>
+  ```
+
+  
+
+
+
+
+
 ### 重写 uni-ui 组件的样式
 
-- 讲了 3 中方法
+#### **方法 1：直接写类名（局部）**
 
-- **方法 1：直接写类名（局部）**
 - 适用：你确认该类名在目标端稳定，且只影响当前页面
   - 注意：很多 uni-ui 组件内部结构会随着版本更新变化，直接写内部类名风险较高
 - **对应源码**：`uni-app/08-uni-ui-form/pages/login/login.vue`
@@ -141,7 +143,10 @@ $uni-text-color: #333;
   - 这种写法本质是“直接命中组件内部 class”，优点是简单粗暴
   - 风险是：uni-ui 组件升级后内部 class/结构变化，你的样式可能失效
 
-- **方法 2：`:deep()`（Vue3/部分端可用，但存在平台差异）** --当修改组件内部的样式而不是组件根元素的那个类，方法一会失效，
+  
+
+#### **方法 2：`:deep()`（Vue3/部分端可用，但存在平台差异）** --当修改组件内部的样式而不是组件根元素的那个类，方法一会失效，
+
 - 某些端 `:deep()` 可能不生效
   - 如果遇到不生效，优先考虑 `:global()` 或者把样式放到全局
 - **对应源码 1**：`uni-app/03-cpns-uni-app/pages/index/index.vue`
@@ -167,23 +172,23 @@ $uni-text-color: #333;
   - `:deep()` 适合写在 `scoped`/局部样式里，穿透到子组件内部
   - 平台差异导致不生效时，优先退回 `:global()`
 
-- **方法 3：`:global()`（跨端更稳一些）**
+#### **方法 3：`:global()`（跨端更稳一些）**
 
-  - 本质是把选择器变成“全局选择器”，不再受 `scoped` 影响。
+- 本质是把选择器变成“全局选择器”，不再受 `scoped` 影响。
 
-    - 所以也可以处理组件内部非根元素的类
+  - 所以也可以处理组件内部非根元素的类
 
-      ```vue
-      <template>
-        <view class="home">
-          ===> home是组件根元素上的类名，方法一可以修改
-          <view class="inner"></view> ====》
-          inner不是，则方法一无效，方法二和方法三可以，</view
-        >
-      </template>
-      ```
+    ```vue
+    <template>
+      <view class="home">
+        ===> home是组件根元素上的类名，方法一可以修改
+        <view class="inner"></view> ====》
+        inner不是，则方法一无效，方法二和方法三可以，</view
+      >
+    </template>
+    ```
 
-  - 把选择器声明为全局选择器
+- 把选择器声明为全局选择器
 
 ```scss
 /* 示例：重写 uni-forms-item label */
@@ -214,16 +219,93 @@ $uni-text-color: #333;
   - `#ifdef H5` / `#endif`
   - `#ifdef MP-WEIXIN`
   - `#ifdef APP-PLUS`
-  - `#ifndef VUE3`（你的源码 `main.js` 就用了）
+  - `#ifndef VUE3`
 
 ```js
-// #ifdef MP-WEIXIN
-uni.showToast({ title: "当前是微信小程序" });
-// #endif
+<template>
+	<view class="content">
+		
+		<!-- #ifdef H5 -->
+		<view class="h5">
+			<view>show H5</view>
+			<img src="@/static/logo.png" alt="">
+		</view>
+		<!-- #endif -->
 
-// #ifdef H5
-console.log("当前是 H5");
-// #endif
+		<!-- #ifdef MP-WEIXIN || APP-PLUS -->
+		<view class="weapp">
+			<view>show weapp</view>
+			<image src="@/static/logo.png"/>
+		</view>
+		<!-- #endif -->
+		
+		<!-- #ifdef APP-PLUS -->
+		<view class="app">
+			<view>show app</view>
+			<image src="@/static/logo.png"/>
+		</view>
+		<!-- #endif -->
+
+
+		<view class="box">我是一个View</view>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				title: 'Hello'
+			}
+		},
+		onLoad() {
+			// #ifdef H5
+			document.title = 'H5'
+			// window.xxx
+			// #endif
+			
+			// #ifdef MP-WEIXIN
+			wx.setNavigationBarTitle({
+				title: "WeApp"
+			})
+			// wx.login()
+			// #endif
+		},
+		onReady() {
+			// #ifdef APP-PLUS
+			uni.setNavigationBarTitle({
+				title: 'App'
+			})
+			uni.setNavigationBarColor({
+				frontColor:'#ffffff',
+				backgroundColor: '#ff8198'
+			})
+			console.log('App ========> ');
+			// #endif
+		},
+		methods: {
+
+		}
+	}
+</script>
+
+<style>
+	.box{
+		/* #ifdef H5 */
+		color: red;
+		/* #endif */
+		
+		/* #ifdef MP-WEIXIN */
+		color: green;
+		/* #endif */
+		
+		/* #ifdef APP-PLUS */
+		color: blue;
+		/* #endif */
+	}
+
+</style>
+
 ```
 
 - **跨端兼容建议**
@@ -242,13 +324,13 @@ console.log("当前是 H5");
   - `pages[0]` 是启动页
   - `globalStyle` 是全局窗口样式
   - `tabBar` 配置底部导航
-
 - `tabBar` 图标建议
   - 旧项目常用 `iconPath/selectedIconPath` 配图片
   - 可以考虑使用 iconfont 或 `uni-icons` 替代图片图标（减小包体积、支持动态颜色、清晰度更稳定）
-  
-- **2022 项目里常见做法仍然有效**：`pages.json` 的结构没有大改
-- **建议优化**：补上 `easycom` 配置，让组件自动引入，也可以不配置因为要组件放在 `components/组件名/组件名.vue`，就可以自动导入，下面 [五。编写自定义组件)](#五。编写自定义组件) 有具体介绍
+
+- 当你导入的组件不是`components/组件名称/组件名称.vue`目录结构这种easycom格式，但也想有easycom那样的快捷键
+  - 比如创建c-cpns文件，
+  - 解决：补上 `easycom` 配置，让组件自动引入
 
 ```json
 {
@@ -267,13 +349,40 @@ console.log("当前是 H5");
 
 ### 页面的路由
 
-- **页面栈跳转（最常用）**
+#### 组件
 
-  - `uni.navigateTo`
-  - `uni.redirectTo`
-  - `uni.navigateBack`
+```vue
+<navigator url="/pages/detail01/detail01" open-type="navigate">
+    <button type="default">01-detail navigate</button>
+</navigator>
+
+<navigator url="/pages/detail01/detail01" open-type="redirect">
+    <button type="default">02-detail redirect</button>
+</navigator>
+
+<navigator url="/pages/category/category" open-type="switchTab">
+    <button type="default">03-category</button>
+</navigator>
+```
+
+
+
+#### api：**页面栈跳转（最常用）**
+
+- `uni.navigateTo`
+- `uni.redirectTo`
+- `uni.navigateBack`
 
 - 对应源码：`uni-app/10-pages-uni-app/pages/home/home.vue`
+
+```vue
+<view class="">2.路由(API)</view>
+<button type="default" @click="goToDetail01()">04-detail navigate</button>
+<button type="default" @click="goToDetail02()">04-detail redirect</button>
+<button type="default" @click="goToDetail03()">04-detail switchTab</button>
+```
+
+
 
 ```js
 goToDetail01() {
@@ -305,24 +414,32 @@ goBackHome() {
 uni.switchTab({ url: "/pages/home/home" });
 ```
 
-#### 为什么 TabBar 页面不能用 `navigateTo`？
+##### 为什么 TabBar 页面不能用 `navigateTo`？
 
 - **TabBar 页面是什么**：在 `pages.json -> tabBar.list` 里配置过的页面，就是 TabBar 页面。
 - **`navigateTo` 的语义**：把页面“压栈打开”（A 还在栈里，B 压到栈顶），适用于普通页面。
 - **`switchTab` 的语义**：在 TabBar 的几个页面之间“切换激活项”，不走页面栈压栈逻辑。
 - **因此**：当目标页属于 TabBar 页面时，用 `navigateTo/redirectTo` 通常会失败（各端报错提示不同，但结论一致），必须用 `switchTab`。
 
-#### 怎么判断某个页面是不是 TabBar 页？
+##### 怎么判断某个页面是不是 TabBar 页？
 
 - 去看 `pages.json`：
   - 出现在 `tabBar.list` 里的：用 `switchTab`
   - 不在 `tabBar.list` 里的：用 `navigateTo/redirectTo`
 
-### 页面的传递参数
+
+
+
+
+### vue2页面的传递参数
+
+[vue3传递数据](#六。Composition 语法下的页面通信（补充）)
 
 - 通过 url 传递
 - 通过 eventChannel
 - 通过事件总线
+
+
 
 - **1）url query 传参（正向）**
 
@@ -360,11 +477,13 @@ const props = defineProps({
 - **说明**
 
   - `onLoad(options)` 一定能拿到 query（推荐用它）
-  - `defineProps` 在部分写法下也能拿到（你项目里做了演示），但不如 `onLoad` 直观
+  - `defineProps` 在部分写法(vue3)下也能拿到（你项目里做了演示），但不如 `onLoad` 直观
 
-- **2）eventChannel（官方推荐，仍然有效）**
 
-  - 你的 `uni-app/11-api-uni-app/pages/home/home.vue` 就演示了
+
+
+
+- **2）eventChannel（官方推荐）**
   - 适合：对象、函数回调（逆向传参）
 
   - **对应源码（正向：A 打开 B，并传数据给 B）**
@@ -404,7 +523,7 @@ uni.navigateTo({
 });
 ```
 
-    - B：`uni-app/10-pages-uni-app/pages/detail02/detail02.vue`
+- B：`uni-app/10-pages-uni-app/pages/detail02/detail02.vue`
 
 ```js
 const eventChannel = this.getOpenerEventChannel();
@@ -417,8 +536,10 @@ eventChannel.emit("acceptDataFormDetail02", {
 
   - `eventChannel.emit/on` 适合传对象、回调、一次性通信
   - “逆向回传”常见两种写法：
-    - A 在 `navigateTo({ events: {} })` 里注册回调（你项目用了）
-    - B 通过 `getOpenerEventChannel().emit()` 回传（你项目也演示了）
+    - A 在 `navigateTo({ events: {} })` 里注册回调
+    - B 通过 `getOpenerEventChannel().emit()` 回传
+
+
 
 - **3）事件总线（需要更新）**
 
@@ -453,6 +574,10 @@ emitter.on("event", (payload) => {});
 emitter.emit("event", { a: 1 });
 ```
 
+
+
+
+
 ### 生命周期
 
 #### App.vue 的生命周期
@@ -482,8 +607,6 @@ export default {
   - `onHide`：页面隐藏
   - `onUnload`：页面卸载
 
-- **对应源码**：`uni-app/10-pages-uni-app/pages/home/home.vue`
-
 ```js
 onLoad() {
 	console.log('home onLoad');
@@ -508,49 +631,67 @@ onReachBottom() {
 },
 ```
 
-#### 组件生命周期（Vue 生命周期）
+
+
+#### 组件生命周期即vue的生命周期
 
 - **Options API 示例**：`uni-app/11-api-uni-app/components/hy-button/hy-button.vue`
 
 ```js
 beforeCreate() {
-	console.log('hy-btn beforeCreate');
+    console.log('detail04 beforeCreate');
 },
 created() {
-	console.log('hy-btn created');
+    console.log('detail04 created');
+},
+beforeMount() {
+    console.log('detail04 beforeMount');
 },
 mounted() {
-	console.log('hy-btn mounted');
+    console.log('detail04 mounted');
 },
+beforeDestroy() {
+    console.log('detail04 beforeDestroy');
+},
+destroyed() {
+    console.log('detail04 destroyed');
+}
 ```
 
 - **Composition API 示例**：`uni-app/11-api-uni-app/components/hy-button-setup/hy-button-setup.vue`
+  - vue2中组件的页面生命周期没有效果，但vue3有
+  - 这里 from 'vue'不用安装vue，因为内嵌了
+
 
 ```js
-import { onBeforeMount, onMounted } from "vue";
-
-onBeforeMount(() => {
-  console.log("hy-buton-setup onBeforeMount");
-});
-
-onMounted(() => {
-  console.log("hy-buton-setup onMounted");
-});
+import { ref, onBeforeMount, onMounted } from 'vue' // 导入vue3的生命周期
+import {
+    onLoad,
+    onShow,
+    onReady,
+    onHide,
+    onUnload,
+    onPullDownRefresh,
+    onReachBottom 
+} from '@dcloudio/uni-app'// 导入页面的声明周期
+。。。。。
 ```
 
-- **常见组件生命周期（列全）**
-  - `beforeCreate/created/beforeMount/mounted/beforeUpdate/updated/beforeUnmount/unmounted`
+- vue和vue3的生命周期所有
+  - created、beforeCreated，mouted，beforeMounted，updated，beforeUpdate，actived，deactivated，beforeUnmount，unmounted，errorCaputred，renderTracked
+    - vue3的setup就是created了
+
+
 
 # 四。其他常用的 API
 
 ### 网络请求的封装
 
 - **为什么要封装**
-
   - 统一 baseURL / header / token
   - 统一 loading、错误提示
   - 统一响应结构（比如 `{ code, data, message }`）
-
+  
 - **基础封装思路（使用 `uni.request`）**
   - 写一个 `request(options)` 返回 Promise
   - 需要 token 时从 Pinia/Storage 取
@@ -575,6 +716,10 @@ export function request({ url, method = "GET", data, header }) {
 - **注意**
   - APP/H5/小程序的网络限制和跨域策略不同
   - 小程序域名要在平台后台配置白名单
+
+
+
+
 
 ### 数据本地的存储
 
@@ -695,9 +840,43 @@ getStorage(){
 - 常见误区
   - **页面的** `onLoad` 不等同于组件的 `onMounted`
 
+
+
+
+
 # 六。Composition 语法下的页面通信（补充）
 
 > 这一节只补充 `<script setup>` 里“怎么写”，概念和三种方式（url/eventChannel/替代事件总线）已在上面讲过，避免重复。
+
+
+
+```vue
+		<view class="">1.页面传递数据(正向)</view>
+		<button type="default" @click="goToDetail01">01-detail01 navigate</button>
+		
+		<view class="">2.页面传递数据(逆向)</view>
+		<button type="default" @click="goToDetail02">01-detail02 navigate</button>
+		
+		<view class="">3.页面逆向传递数据(全局事件总线)</view>  别用上面vue2解释
+		<button type="default" @click="goToDetail03">01-detail03 navigate</button>
+
+<scrip setup>
+	function goToDetail01() {
+		console.log('goToDetail01');
+		uni.navigateTo({
+			url: '/pages/detail01/detail01?name=liujun&id=100',
+			success(res) {
+				res.eventChannel.emit('acceptDataFormHomePage', {
+					data: '我是home页面传递给detail01的数据'
+				})
+			},
+		})
+	}
+    ...
+</scrip>
+```
+
+
 
 ### 1）`<script setup>` 获取 url query 参数
 
@@ -711,7 +890,11 @@ onLoad((options) => {
 });
 ```
 
-### 2）`<script setup>` 发送 eventChannel（打开页面后发送）
+
+
+
+
+### 2）`<script setup>` 发送 eventChannel(正向)
 
 - 对应源码：`uni-app/11-api-uni-app/pages/home/home.vue`
 
@@ -726,7 +909,7 @@ onLoad((options) => {
   });
   ```
 
-### 3）`<script setup>` 接收 eventChannel
+##### `<script setup>` 接收 eventChannel
 
 - 对应源码：`uni-app/11-api-uni-app/pages/detail01/detail01.vue`
 
@@ -740,3 +923,52 @@ eventChannel.on("acceptDataFormHomePage", (value) => {
 });
 ```
 
+
+
+### 3） eventChannel（逆向）
+
+```javascript
+function goToDetail02() { 主页面接受
+    uni.navigateTo({
+        url: '/pages/detail02/detail02?name=liujun&id=200',
+        events: {
+            acceptDataFormDetail02(value) {
+                console.log('接收到detail02传递过来的数据', value);
+            }
+        }
+    })
+}
+```
+
+- 跳转的页面传递
+
+  - 主要下面的vue3获取this方式，vue3是没有this的
+
+  ```javascript
+  <template>
+  	<view>
+  		<button type="default" @click="goBack">返回</button>
+  	</view>
+  </template>
+  
+  <script setup>
+  	import {
+  		getCurrentInstance,
+  		ref
+  	} from 'vue'
+   
+  	const $instance = ref(getCurrentInstance().proxy) // this
+   
+  	function goBack() {
+  		uni.navigateBack({
+  			delta: 1
+  		})
+  		const eventChannel = $instance.value.getOpenerEventChannel()
+  		// 触发事件, 将detail02的数据传递给Home页面
+  		eventChannel.emit('acceptDataFormDetail02', {
+  			data: '这里是detail02传递给Home页面的数据'
+  		})
+  	}
+  ```
+
+  

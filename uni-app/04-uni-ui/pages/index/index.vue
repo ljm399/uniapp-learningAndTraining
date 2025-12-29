@@ -2,7 +2,6 @@
 	<view class="content">
 		<uni-badge text="100" type="primary"></uni-badge>
 		<uni-badge text="90" type="success"></uni-badge>
-
 		<uni-badge text="90" type="info" absolute="rightTop">
 			<button>button</button>
 		</uni-badge>
